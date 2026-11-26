@@ -22,17 +22,25 @@ Take a copy of the [docker-compose.yml](https://github.com/alangrainger/immich-p
 services:
   immich-person-to-album:
     image: alangrainger/immich-person-to-album:latest
+    container_name: immich-person-to-album
     restart: always
     volumes:
-      - ./config.json:/data/config.json:ro
+      - ./data:/data
 ```
+
+The `immich-person-to-album` service mounts a `data` directory from the host at `/data` inside the container:
+
+- `/data` is mounted read-write **as a directory**, not as the config file itself.
+- The app reads its config from `/data/config.json`, creating it from `/data/config.json.example` when absent.
+- The UI may atomically rewrite `/data/config.json` (write a temporary file and rename it over the old one). Renaming a temporary file onto a bind-mounted file fails with `EBUSY`, so the whole `/data` directory is mounted rather than mounting just the config file.
 
 There are two methods for specifying the config options:
 
 ### Configure via `config.json` file
 
-1. Next to your `docker-compose.yml` file, put a copy of [config.json](https://github.com/alangrainger/immich-person-to-album/blob/main/data/config.json.example).
+1. Next to your `docker-compose.yml` file, create a `data` directory, and put a copy of [config.json](https://github.com/alangrainger/immich-person-to-album/blob/main/data/config.json.example) in it as `config.json`.
 2. Edit the `config.json` file as required.
+3. Restart the `immich-person-to-album` container so that it reads the new config.
 
 ### ...or via Inline configuration
 
@@ -60,6 +68,32 @@ Alternatively, you can add the configuration inline in your `docker-compose.yml`
           ]
         }
 ```
+
+### Add the service to an existing Immich compose network
+
+If you already run Immich with docker compose, add this service to the same network as your Immich server instead of using the standalone compose file above. For example, if your Immich service is called `immich` and uses a network of that name:
+
+```yaml
+services:
+  immich-person-to-album:
+    image: alangrainger/immich-person-to-album:latest
+    restart: always
+    networks:
+      - immich
+    volumes:
+      - ./data:/data
+
+networks:
+  immich:
+    external: true
+```
+
+The `immich` network must already exist (for example, created by your Immich compose project). Point the `immichServer` in your config, or the `immichServer` in the inline `CONFIG`, at the Immich service on that network, for example `http://immich:2283`.
+
+### Config overrides
+
+- The `CONFIG` environment variable overrides the config file entirely, so the file is not read at all when it is set. **Do not set `CONFIG` when the UI manages the config.**
+- The config is read once, when the app is constructed at startup, so changes need a restart of the container to take effect.
 
 ### Person link options
 
