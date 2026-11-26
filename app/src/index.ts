@@ -2,9 +2,11 @@ import { PersonToAlbum } from './function'
 import { init } from '@immich/sdk'
 import cron from 'node-cron'
 
-const pta = new PersonToAlbum()
+let pta: PersonToAlbum
 
 async function main () {
+  // Read the config from the mounted data directory at startup, not at import time
+  pta = new PersonToAlbum()
   console.log(new Date().toISOString())
 
   // Test connection to Immich
