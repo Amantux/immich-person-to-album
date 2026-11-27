@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="See the faces of the people you want in an album, and choose the album to add their photos to." />
+  <title>Immich Person to Album</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Immich Person to Album</h1>
+      <p class="tagline">Automatically add photos of people to an album, so that album can be shared.</p>
+    </div>
+  </header>
+  <main class="container">
+    <section class="panel" aria-labelledby="faces-heading">
+      <div class="panel-heading">
+        <h2 id="faces-heading">People</h2>
+        <p class="panel-subtitle">The faces in your photos, with the names that Immich has given them.</p>
+      </div>
+      <ul id="faces" class="face-grid" aria-label="People"></ul>
+      <p id="faces-status" class="status" role="status" hidden></p>
+    </section>
+    <section class="panel" aria-labelledby="album-heading">
+      <div class="panel-heading">
+        <h2 id="album-heading">Album</h2>
+        <p class="panel-subtitle">Choose the album that the photos of these people are added to.</p>
+      </div>
+      <form id="album-form" class="album-form">
+        <div class="field">
+          <label for="album">Album</label>
+          <select id="album" name="album" required></select>
+          <p class="field-hint">The album that new photos of these people are added to.</p>
+        </div>
+        <button type="submit" id="save-album">Save album</button>
+      </form>
+      <p id="album-current" class="album-current" hidden></p>
+      <p id="album-status" class="status" role="status" hidden></p>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <p>Photos are added to the album on the schedule configured in the app.</p>
+    </div>
+  </footer>
+  <script src="/app.js"></script>
+</body>
+</html>
