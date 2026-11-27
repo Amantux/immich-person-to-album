@@ -9,30 +9,49 @@ import {
   SearchFilterBranch,
   searchAssets
 } from '@immich/sdk'
-import path from 'path'
+import { copyFileSync, existsSync, readFileSync } from 'fs'
 
 /** Maximum number of assets in one search page, and in one add-to-album request */
 const PAGE_SIZE = 1000
 
+/**
+ * The config file that the app reads at startup, from the mounted data directory
+ */
+const CONFIG_FILE = '/data/config.json'
+/**
+ * The example config file, which becomes the config file when the data directory has none yet
+ */
+const EXAMPLE_CONFIG_FILE = '/data/config.json.example'
+
 export class PersonToAlbum {
   config: Config
+  configFile: string
+  exampleConfigFile: string
 
-  constructor () {
+  constructor (configFile: string = CONFIG_FILE, exampleConfigFile: string = EXAMPLE_CONFIG_FILE) {
+    this.configFile = configFile
+    this.exampleConfigFile = exampleConfigFile
     this.initConfig()
   }
 
   /**
-   * Read the config.json file or parse the CONFIG env value to get the configuration
+   * Read the config file from the mounted data directory at startup, or parse the CONFIG env value
+   * to get the configuration. When the config file is absent it is created from the example.
    */
   initConfig () {
     try {
       if (process.env.CONFIG) {
+        // The CONFIG env var fully overrides the file, so the file is not read at all
         // Attempt to parse docker-compose config string into JSON (if specified)
         this.config = JSON.parse(process.env.CONFIG)
-      } else {
-        const configJson = require(path.resolve('../data/config.json'))
-        if (typeof configJson === 'object') this.config = configJson
+        return
       }
+      if (!existsSync(this.configFile)) {
+        // Create the config file from the example when the mounted data directory has none yet
+        copyFileSync(this.exampleConfigFile, this.configFile)
+      }
+      const configJson = JSON.parse(readFileSync(this.configFile, 'utf8'))
+      if (typeof configJson === 'object') this.config = configJson
     } catch (e) {
       console.log(e)
       console.log('Unable to parse config file.')
