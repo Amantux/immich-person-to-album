@@ -24,14 +24,24 @@ services:
     image: alangrainger/immich-person-to-album:latest
     restart: always
     volumes:
-      - ./config.json:/data/config.json:ro
+      - ./data:/data
 ```
+
+The `volumes` entry mounts the `data` directory into the container at `/data` as a read-write directory volume, rather than bind-mounting a single `config.json` file into `/data/config.json`.
+
+The app reads its config from `/data/config.json`, and creates it from `/data/config.json.example` when the mounted data directory has none yet.
+
+When the app saves a new config, it atomically rewrites `/data/config.json` by writing a temporary file inside `/data` and renaming it over `/data/config.json`. Renaming inside a directory mount is supported, so this does not hit `EBUSY` (a rename onto a single-file bind mount would).
+
+The `CONFIG` environment variable overrides the config file entirely, so the file is not read at all when it is set, and it must not be set when the UI is meant to manage the config.
+
+The config is currently read once, in the app constructor at startup, so when the UI saves a new config a restart is required until the loader re-reads the config per run. Re-reading the config per run is a documented follow-up, and is out of scope.
 
 There are two methods for specifying the config options:
 
 ### Configure via `config.json` file
 
-1. Next to your `docker-compose.yml` file, put a copy of [config.json](https://github.com/alangrainger/immich-person-to-album/blob/main/data/config.json.example).
+1. Next to your `docker-compose.yml` file, put a copy of [config.json](https://github.com/alangrainger/immich-person-to-album/blob/main/data/config.json.example) into the mounted data directory as `config.json` (for example, `./data/config.json`).
 2. Edit the `config.json` file as required.
 
 ### ...or via Inline configuration

@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "npx tsc",
-    "test": "podman build --build-arg PACKAGE_VERSION=$(npm pkg get version | xargs) --format docker -t immich-person-test .. && podman run --init -it -p=3000:3000 --userns=keep-id -v ../data:/data:Z --restart=always immich-person-test",
+    "test": "vitest run",
     "start": "node dist/index.js"
   },
   "author": "Alan Grainger",
@@ -28,6 +28,7 @@
     "eslint": "^8.49.0",
     "eslint-config-standard": "^17.1.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.9"
   }
 }
